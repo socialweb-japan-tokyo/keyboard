@@ -364,7 +364,7 @@ function renderType(){
     <div class="feedback" id="fb"></div>
     <div class="card-foot">
       <button class="reveal-hint" id="reveal">答えを見る</button>
-      <button class="next-btn" id="next">次へ →</button>
+      <button class="next-btn" id="next">次へ → (Enter)</button>
     </div>`;
   renderKeycaps(new Set());
   document.getElementById('reveal').onclick = () => revealType();
@@ -440,7 +440,7 @@ function renderQuiz(){
     <div class="feedback" id="fb"></div>
     <div class="card-foot">
       <span></span>
-      <button class="next-btn" id="next">次へ →</button>
+      <button class="next-btn" id="next">次へ → (Enter)</button>
     </div>`;
   const box = document.getElementById('opts');
   opts.forEach(o => {
@@ -482,6 +482,21 @@ function render(){
   if(mode === 'type') renderType(); else renderQuiz();
 }
 function next(){ idx++; render(); }
+
+// Enterで次の問題へ。回答済みのときだけ反応させる
+// （押す練習モードではEnterがショートカットの一部になり得るため、
+//   未回答のあいだは next を発火させない）
+function answeredNow(){
+  return (mode === 'type' && typeLocked) || (mode === 'quiz' && answered);
+}
+window.addEventListener('keydown', (e)=>{
+  if(e.key !== 'Enter') return;
+  if(e.altKey || e.ctrlKey || e.shiftKey) return; // 修飾キー付きEnterは判定用なので無視
+  if(idx >= deck.length) return;      // 完了画面では無効
+  if(!answeredNow()) return;          // 未回答なら次へ進まない
+  e.preventDefault();
+  next();
+}, true);
 
 function renderDone(){
   const pct = score.total ? Math.round((score.right/score.total)*100) : 0;
