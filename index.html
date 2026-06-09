@@ -295,25 +295,27 @@ function eventKeyLabel(e){
   if(e.key.startsWith("Arrow")) return "Arrow";
   if(/^F\d{1,2}$/.test(e.key)) return e.key;
   if(e.key === " ") return "Space";
-  if(/^[0-9]$/.test(e.key)) return "Number"; // for generic numeric steps
+  if(/^[0-9]$/.test(e.key)) return e.key; // 数字はそのまま（Ctrl+1 などに対応）
   return e.key.length === 1 ? e.key.toUpperCase() : e.key;
 }
 // Some shortcuts use a literal digit; treat both "Number" placeholder and exact match
 function keysMatch(target, pressed){
-  // target: array of canonical labels; pressed: Set of canonical labels currently/finally held
-  const t = target.map(k => k === "Number" ? "Number" : k);
-  if(t.length !== pressed.length) return false;
-  // build comparable sorted arrays
-  const sortedT = [...t].sort();
-  const sortedP = [...pressed].sort();
-  for(let i=0;i<sortedT.length;i++){
-    if(sortedT[i] !== sortedP[i]){
-      // allow a real digit to satisfy "Number"
-      if(sortedT[i] === "Number" && /^\d$/.test(sortedP[i])) continue;
-      return false;
+  // target: array of canonical labels; pressed: array of canonical labels held
+  if(target.length !== pressed.length) return false;
+  const remaining = [...pressed];
+  // まず具体的なキー（Number以外）を消し込み、最後にNumberを数字へ割り当てる
+  const ordered = [...target].sort((a,b)=> (a==="Number"?1:0) - (b==="Number"?1:0));
+  for(const t of ordered){
+    let i;
+    if(t === "Number"){
+      i = remaining.findIndex(p => /^\d$/.test(p)); // 任意の数字
+    } else {
+      i = remaining.indexOf(t);
     }
+    if(i === -1) return false;
+    remaining.splice(i,1);
   }
-  return true;
+  return remaining.length === 0;
 }
 
 /* ============ State ============ */
