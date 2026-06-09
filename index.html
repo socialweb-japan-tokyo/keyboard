@@ -415,6 +415,8 @@ window.addEventListener('keydown', (e)=>{
   renderKeycaps(held);
   if(keysMatch(deck[idx].keys, [...held])){
     typeSucceed();
+    // 正解と同じEnterイベントで「次へ」が発火しないよう後続リスナーを止める
+    e.stopImmediatePropagation();
   }
 }, true);
 
