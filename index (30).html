@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>キーボード道場 — Excel & PowerPoint ショートカット練習</title>
+<style>
+  /* ===== Design tokens =====
+     Theme: "keycap workshop" — a tactile mechanical-keyboard feel.
+     Palette: deep slate base, warm paper card, single amber accent,
+              excel-green / ppt-orange as subject-coded signals.
+     Type: Space Grotesk (display, mechanical), Inter (body),
+           JetBrains Mono (keycaps / data). */
+  :root {
+    --bg:        #14171c;
+    --bg-2:      #1b1f26;
+    --paper:     #f4f1ea;
+    --ink:       #14171c;
+    --muted:     #6b7280;
+    --line:      #2a2f38;
+    --amber:     #f0a830;
+    --amber-dk:  #c4831c;
+    --excel:     #1f8f4e;
+    --ppt:       #d35230;
+    --good:      #2fae66;
+    --bad:       #e0573e;
+    --keycap:    #2a2f38;
+    --keycap-top:#363c47;
+    --shadow:    0 2px 0 #0c0e12, 0 6px 18px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--paper);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+
+  /* ===== Header ===== */
+  header { padding: 48px 0 28px; text-align: center; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: .28em; text-transform: uppercase;
+    color: var(--amber); margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: clamp(32px, 7vw, 52px);
+    letter-spacing: -.02em; line-height: 1.02;
+  }
+  h1 .row { display: inline-flex; gap: 10px; align-items: baseline; }
+  .sub { color: var(--muted); margin-top: 14px; font-size: 15px; }
+
+  /* ===== App switch ===== */
+  .apps { display: flex; gap: 12px; justify-content: center; margin: 28px 0 8px; }
+  .app-btn {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: 15px; cursor: pointer;
+    background: var(--bg-2); color: var(--paper);
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 22px; display: flex; align-items: center; gap: 9px;
+    transition: transform .12s, border-color .12s;
+  }
+  .app-btn:hover { transform: translateY(-2px); }
+  .app-btn .dot { width: 10px; height: 10px; border-radius: 3px; }
+  .app-btn[data-app="excel"] .dot { background: var(--excel); }
+  .app-btn[data-app="ppt"]   .dot { background: var(--ppt); }
+  .app-btn.active[data-app="excel"] { border-color: var(--excel); box-shadow: 0 0 0 1px var(--excel); }
+  .app-btn.active[data-app="ppt"]   { border-color: var(--ppt);   box-shadow: 0 0 0 1px var(--ppt); }
+
+  /* ===== Mode switch ===== */
+  .modes { display: flex; gap: 0; justify-content: center; margin: 18px 0 30px; }
+  .mode-btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    letter-spacing: .04em; cursor: pointer;
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--line); padding: 9px 18px;
+  }
+  .mode-btn:first-child { border-radius: 10px 0 0 10px; }
+  .mode-btn:last-child { border-radius: 0 10px 10px 0; border-left: none; }
+  .mode-btn.active { background: var(--amber); color: var(--ink); border-color: var(--amber); font-weight: 700; }
+
+  /* ===== Card ===== */
+  .card {
+    background: var(--paper); color: var(--ink);
+    border-radius: 20px; padding: 38px 32px 32px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: var(--amber);
+  }
+  .card.excel::before { background: var(--excel); }
+  .card.ppt::before   { background: var(--ppt); }
+
+  .progress {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--muted); margin-bottom: 22px;
+  }
+  .progress .bar { flex: 1; height: 4px; background: #e1ddd2; border-radius: 99px; margin: 0 14px; overflow: hidden; }
+  .progress .bar i { display: block; height: 100%; background: var(--amber); width: 0; transition: width .3s; border-radius: 99px; }
+
+  .prompt-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .prompt {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: clamp(22px, 5vw, 30px); line-height: 1.2; color: var(--ink);
+    min-height: 1.2em;
+  }
+
+  /* ===== Type mode ===== */
+  .keys-display {
+    margin: 30px 0 8px; display: flex; gap: 10px; flex-wrap: wrap;
+    align-items: center; min-height: 64px;
+  }
+  .keycap {
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px;
+    background: var(--keycap-top); color: var(--paper);
+    border-radius: 9px; padding: 14px 16px; min-width: 50px; text-align: center;
+    box-shadow: 0 4px 0 var(--keycap), 0 5px 8px rgba(0,0,0,.25);
+    border: 1px solid #434a57;
+  }
+  .keycap.live { background: var(--amber); color: var(--ink); box-shadow: 0 4px 0 var(--amber-dk); border-color: var(--amber-dk); }
+  .plus { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-size: 18px; }
+  .hint-press {
+    text-align: center; font-size: 13px; color: var(--muted);
+    margin-top: 18px; font-family: 'JetBrains Mono', monospace;
+  }
+  .feedback {
+    text-align: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: 18px; margin-top: 20px; min-height: 26px;
+  }
+  .feedback.good { color: var(--good); }
+  .feedback.bad  { color: var(--bad); }
+
+  /* ===== Quiz mode ===== */
+  .options { display: grid; gap: 12px; margin-top: 28px; }
+  .option {
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 16px;
+    text-align: left; cursor: pointer;
+    background: #fff; color: var(--ink);
+    border: 1.5px solid #d8d3c6; border-radius: 12px; padding: 16px 18px;
+    transition: border-color .12s, transform .1s;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .option:hover:not(:disabled) { border-color: var(--ink); transform: translateX(3px); }
+  .option .tag {
+    font-size: 12px; background: #efece3; color: var(--muted);
+    border-radius: 6px; padding: 3px 8px; flex: none;
+  }
+  .option.correct { border-color: var(--good); background: #e9f8ef; }
+  .option.wrong   { border-color: var(--bad);  background: #fbeae6; }
+  .option:disabled { cursor: default; }
+
+  /* ===== Footer of card ===== */
+  .card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 26px; }
+  .reveal-hint {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--muted); cursor: pointer; text-decoration: underline; background: none; border: none;
+  }
+  .next-btn {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px;
+    background: var(--ink); color: var(--paper); border: none; border-radius: 11px;
+    padding: 13px 26px; cursor: pointer; transition: transform .1s; visibility: hidden;
+  }
+  .next-btn:hover { transform: translateY(-2px); }
+
+  /* ===== Score / done ===== */
+  .scorebar {
+    display: flex; gap: 24px; justify-content: center; margin-top: 26px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted);
+  }
+  .scorebar b { color: var(--paper); font-size: 18px; }
+
+  .done { text-align: center; padding: 20px 0; }
+  .done h2 { font-family: 'Space Grotesk', sans-serif; font-size: 30px; color: var(--ink); }
+  .done .pct { font-size: 60px; font-weight: 700; font-family: 'Space Grotesk', sans-serif; color: var(--amber-dk); margin: 8px 0; }
+  .done p { color: var(--muted); }
+  .restart {
+    margin-top: 22px; font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+    background: var(--ink); color: var(--paper); border: none; border-radius: 11px;
+    padding: 13px 30px; cursor: pointer; font-size: 15px;
+  }
+
+  footer.site { text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; font-family: 'JetBrains Mono', monospace; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 480px) {
+    .card { padding: 28px 20px 24px; }
+    .apps { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Keyboard Dojo · 鍵盤道場</div>
+    <h1><span class="row">指で覚える<br>ショートカット</span></h1>
+    <p class="sub">Excel と PowerPoint の操作を、手を動かして体に入れる。</p>
+
+    <div class="apps">
+      <button class="app-btn active" data-app="excel"><span class="dot"></span>Excel</button>
+      <button class="app-btn" data-app="ppt"><span class="dot"></span>PowerPoint</button>
+    </div>
+    <div class="modes">
+      <button class="mode-btn active" data-mode="type">押す練習</button>
+      <button class="mode-btn" data-mode="quiz">クイズ</button>
+    </div>
+  </header>
+
+  <main class="card excel" id="card"></main>
+
+  <div class="scorebar">
+    <span>正解 <b id="sc-right">0</b></span>
+    <span>挑戦 <b id="sc-total">0</b></span>
+    <span>連続 <b id="sc-streak">0</b></span>
+  </div>
+
+  <footer class="site">Windows 版 · Microsoft 365 準拠 · ⌨ press to learn</footer>
+</div>
+
+<script>
+/* ============ Shortcut data (Windows) ============ */
+const DATA = {
+  excel: [
+    { desc: "セルの内容をコピーする", keys: ["Ctrl","C"] },
+    { desc: "コピーした内容を貼り付ける", keys: ["Ctrl","V"] },
+    { desc: "直前の操作を元に戻す", keys: ["Ctrl","Z"] },
+    { desc: "元に戻した操作をやり直す", keys: ["Ctrl","Y"] },
+    { desc: "選択したセルを切り取る", keys: ["Ctrl","X"] },
+    { desc: "ブックを保存する", keys: ["Ctrl","S"] },
+    { desc: "セル内で改行する", keys: ["Alt","Enter"] },
+    { desc: "現在の日付を入力する", keys: ["Ctrl",";"] },
+    { desc: "選択範囲の合計を自動入力する（オートSUM）", keys: ["Alt","Shift","="] },
+    { desc: "セルの書式設定ダイアログを開く", keys: ["Ctrl","1"] },
+    { desc: "数式を表示／非表示で切り替える", keys: ["Ctrl","`"] },
+    { desc: "新しいワークシートを挿入する", keys: ["Shift","F11"] },
+    { desc: "上のセルの内容を下にコピーする", keys: ["Ctrl","D"] },
+    { desc: "左のセルの内容を右にコピーする", keys: ["Ctrl","R"] },
+    { desc: "選択範囲をテーブルに変換する", keys: ["Ctrl","T"] },
+    { desc: "フィルターのオン／オフを切り替える", keys: ["Ctrl","Shift","L"] },
+    { desc: "データの末尾（端）まで一気に移動する", keys: ["Ctrl","Arrow"] },
+    { desc: "端まで範囲選択する", keys: ["Ctrl","Shift","Arrow"] },
+    { desc: "シート全体を選択する", keys: ["Ctrl","A"] },
+    { desc: "検索ダイアログを開く", keys: ["Ctrl","F"] },
+    { desc: "置換ダイアログを開く", keys: ["Ctrl","H"] },
+    { desc: "次のワークシートに移動する", keys: ["Ctrl","PgDn"] },
+    { desc: "セル参照を絶対／相対で切り替える", keys: ["F4"] },
+    { desc: "選択した行を非表示にする", keys: ["Ctrl","9"] },
+  ],
+  ppt: [
+    { desc: "最初からスライドショーを開始する", keys: ["F5"] },
+    { desc: "現在のスライドからスライドショーを開始する", keys: ["Shift","F5"] },
+    { desc: "スライドショーを終了する", keys: ["Esc"] },
+    { desc: "新しいスライドを追加する", keys: ["Ctrl","M"] },
+    { desc: "プレゼンを保存する", keys: ["Ctrl","S"] },
+    { desc: "直前の操作を元に戻す", keys: ["Ctrl","Z"] },
+    { desc: "選択したオブジェクトをコピーする", keys: ["Ctrl","C"] },
+    { desc: "貼り付ける", keys: ["Ctrl","V"] },
+    { desc: "オブジェクトを複製する", keys: ["Ctrl","D"] },
+    { desc: "テキストを太字にする", keys: ["Ctrl","B"] },
+    { desc: "テキストを下線付きにする", keys: ["Ctrl","U"] },
+    { desc: "文字を大きくする", keys: ["Ctrl","Shift",">"] },
+    { desc: "文字を小さくする", keys: ["Ctrl","Shift","<"] },
+    { desc: "オブジェクトをグループ化する", keys: ["Ctrl","G"] },
+    { desc: "グループ化を解除する", keys: ["Ctrl","Shift","G"] },
+    { desc: "書式をコピーする（書式のコピー）", keys: ["Ctrl","Shift","C"] },
+    { desc: "コピーした書式を貼り付ける", keys: ["Ctrl","Shift","V"] },
+    { desc: "スライドショー中に画面を黒くする", keys: ["B"] },
+    { desc: "スライドショー中に指定番号へ移動する", keys: ["Number","Enter"] },
+    { desc: "新しいプレゼンを作成する", keys: ["Ctrl","N"] },
+    { desc: "ハイパーリンクを挿入する", keys: ["Ctrl","K"] },
+    { desc: "選択範囲を中央揃えにする", keys: ["Ctrl","E"] },
+  ]
+};
+
+/* ============ Key matching helpers ============ */
+// Map physical event codes / keys to our canonical labels
+function eventKeyLabel(e){
+  if(e.key === "Control") return "Ctrl";
+  if(e.key === "Shift")   return "Shift";
+  if(e.key === "Alt")     return "Alt";
+  if(e.key === "Enter")   return "Enter";
+  if(e.key === "Escape")  return "Esc";
+  if(e.key === "PageDown")return "PgDn";
+  if(e.key === "PageUp")  return "PgUp";
+  if(e.key.startsWith("Arrow")) return "Arrow";
+  if(/^F\d{1,2}$/.test(e.key)) return e.key;
+  if(e.key === " ") return "Space";
+  if(/^[0-9]$/.test(e.key)) return "Number"; // for generic numeric steps
+  return e.key.length === 1 ? e.key.toUpperCase() : e.key;
+}
+// Some shortcuts use a literal digit; treat both "Number" placeholder and exact match
+function keysMatch(target, pressed){
+  // target: array of canonical labels; pressed: Set of canonical labels currently/finally held
+  const t = target.map(k => k === "Number" ? "Number" : k);
+  if(t.length !== pressed.length) return false;
+  // build comparable sorted arrays
+  const sortedT = [...t].sort();
+  const sortedP = [...pressed].sort();
+  for(let i=0;i<sortedT.length;i++){
+    if(sortedT[i] !== sortedP[i]){
+      // allow a real digit to satisfy "Number"
+      if(sortedT[i] === "Number" && /^\d$/.test(sortedP[i])) continue;
+      return false;
+    }
+  }
+  return true;
+}
+
+/* ============ State ============ */
+let app = "excel";
+let mode = "type";
+let deck = [];
+let idx = 0;
+let answered = false;
+let score = { right:0, total:0, streak:0 };
+
+const card = document.getElementById('card');
+
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+function buildDeck(){ deck = shuffle(DATA[app]); idx = 0; }
+
+function updateScore(){
+  document.getElementById('sc-right').textContent = score.right;
+  document.getElementById('sc-total').textContent = score.total;
+  document.getElementById('sc-streak').textContent = score.streak;
+}
+
+function setCardTheme(){
+  card.classList.remove('excel','ppt');
+  card.classList.add(app);
+}
+
+/* ============ Render: shared shell ============ */
+function progressBar(){
+  const pct = Math.round((idx/deck.length)*100);
+  return `<div class="progress">
+    <span>${app === 'excel' ? 'EXCEL' : 'POWERPOINT'}</span>
+    <span class="bar"><i style="width:${pct}%"></i></span>
+    <span>${idx+1} / ${deck.length}</span>
+  </div>`;
+}
+
+/* ============ TYPE MODE ============ */
+let held = new Set();
+let typeLocked = false;
+
+function renderType(){
+  const q = deck[idx];
+  card.innerHTML = progressBar() + `
+    <div class="prompt-label">この操作のショートカットは？</div>
+    <div class="prompt">${q.desc}</div>
+    <div class="keys-display" id="keysDisp"></div>
+    <div class="hint-press">キーを押してください（同時押し）</div>
+    <div class="feedback" id="fb"></div>
+    <div class="card-foot">
+      <button class="reveal-hint" id="reveal">答えを見る</button>
+      <button class="next-btn" id="next">次へ →</button>
+    </div>`;
+  renderKeycaps(new Set());
+  document.getElementById('reveal').onclick = () => revealType();
+  document.getElementById('next').onclick = next;
+  typeLocked = false; held = new Set();
+}
+
+function renderKeycaps(activeSet){
+  const q = deck[idx];
+  const disp = document.getElementById('keysDisp');
+  if(!disp) return;
+  disp.innerHTML = q.keys.map((k,i) => {
+    const label = (k === "Arrow") ? "↑↓←→" : (k === "Number") ? "数字" : k;
+    const live = activeSet.has(k) || (k==="Number" && [...activeSet].some(x=>/^\d$/.test(x)));
+    const cap = `<span class="keycap ${live?'live':''}">${label}</span>`;
+    return i < q.keys.length-1 ? cap + `<span class="plus">+</span>` : cap;
+  }).join('');
+}
+
+function revealType(){
+  if(typeLocked) return;
+  typeLocked = true;
+  renderKeycaps(new Set(deck[idx].keys));
+  const fb = document.getElementById('fb');
+  fb.className = 'feedback bad'; fb.textContent = '答えを確認 — 次の問題でもう一度試そう';
+  score.total++; score.streak = 0; updateScore();
+  document.getElementById('next').style.visibility = 'visible';
+}
+
+function typeSucceed(){
+  typeLocked = true;
+  renderKeycaps(new Set(deck[idx].keys));
+  const fb = document.getElementById('fb');
+  fb.className = 'feedback good'; fb.textContent = '正解！ ✓';
+  score.right++; score.total++; score.streak++; updateScore();
+  document.getElementById('next').style.visibility = 'visible';
+}
+
+/* keyboard listeners for type mode */
+window.addEventListener('keydown', (e)=>{
+  if(mode !== 'type' || typeLocked || idx>=deck.length) return;
+  // prevent browser shortcuts hijacking practice
+  if(["Tab"].includes(e.key)) return;
+  e.preventDefault();
+  held.add(eventKeyLabel(e));
+  renderKeycaps(held);
+  if(keysMatch(deck[idx].keys, [...held])){
+    typeSucceed();
+  }
+}, true);
+
+window.addEventListener('keyup', (e)=>{
+  if(mode !== 'type' || typeLocked) return;
+  held.delete(eventKeyLabel(e));
+  // also clear digit placeholders
+  renderKeycaps(held);
+});
+
+/* ============ QUIZ MODE ============ */
+function keysToString(keys){
+  return keys.map(k => k==="Arrow" ? "↑↓←→" : k==="Number" ? "数字" : k).join(" + ");
+}
+function renderQuiz(){
+  const q = deck[idx];
+  // build 4 options: correct + 3 distractors from same app
+  const pool = DATA[app].filter(x => x.desc !== q.desc);
+  const wrongs = shuffle(pool).slice(0,3);
+  const opts = shuffle([q, ...wrongs]);
+  card.innerHTML = progressBar() + `
+    <div class="prompt-label">この操作のショートカットは？</div>
+    <div class="prompt">${q.desc}</div>
+    <div class="options" id="opts"></div>
+    <div class="feedback" id="fb"></div>
+    <div class="card-foot">
+      <span></span>
+      <button class="next-btn" id="next">次へ →</button>
+    </div>`;
+  const box = document.getElementById('opts');
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'option';
+    b.innerHTML = `<span class="tag">${app==='excel'?'XL':'PPT'}</span>${keysToString(o.keys)}`;
+    b.onclick = () => pickQuiz(b, o, q);
+    box.appendChild(b);
+  });
+  document.getElementById('next').onclick = next;
+  answered = false;
+}
+
+function pickQuiz(btn, chosen, correct){
+  if(answered) return;
+  answered = true;
+  const buttons = [...document.querySelectorAll('.option')];
+  buttons.forEach(b => b.disabled = true);
+  const fb = document.getElementById('fb');
+  score.total++;
+  if(chosen.desc === correct.desc){
+    btn.classList.add('correct');
+    fb.className = 'feedback good'; fb.textContent = '正解！ ✓';
+    score.right++; score.streak++;
+  } else {
+    btn.classList.add('wrong');
+    buttons.forEach(b => { if(b.textContent.includes(keysToString(correct.keys))) b.classList.add('correct'); });
+    fb.className = 'feedback bad'; fb.textContent = `正解は ${keysToString(correct.keys)}`;
+    score.streak = 0;
+  }
+  updateScore();
+  document.getElementById('next').style.visibility = 'visible';
+}
+
+/* ============ Flow ============ */
+function render(){
+  setCardTheme();
+  if(idx >= deck.length){ renderDone(); return; }
+  if(mode === 'type') renderType(); else renderQuiz();
+}
+function next(){ idx++; render(); }
+
+function renderDone(){
+  const pct = score.total ? Math.round((score.right/score.total)*100) : 0;
+  let msg = pct>=90 ? "達人級。指が覚えている。" : pct>=70 ? "いい調子。あと少しで完璧。" : pct>=40 ? "繰り返せば必ず身につく。" : "まずは答えを見ながらで大丈夫。";
+  card.innerHTML = `<div class="done">
+    <h2>1周 完了</h2>
+    <div class="pct">${pct}%</div>
+    <p>${score.right} / ${score.total} 問正解 · ${msg}</p>
+    <button class="restart" id="rs">もう一周する</button>
+  </div>`;
+  document.getElementById('rs').onclick = () => { buildDeck(); render(); };
+}
+
+/* ============ Controls ============ */
+document.querySelectorAll('.app-btn').forEach(b=>{
+  b.onclick = () => {
+    document.querySelectorAll('.app-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    app = b.dataset.app;
+    buildDeck(); render();
+  };
+});
+document.querySelectorAll('.mode-btn').forEach(b=>{
+  b.onclick = () => {
+    document.querySelectorAll('.mode-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    mode = b.dataset.mode;
+    render();
+  };
+});
+
+/* init */
+buildDeck();
+render();
+updateScore();
+</script>
+</body>
+</html>
