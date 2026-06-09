@@ -245,7 +245,7 @@ const DATA = {
     { desc: "新しいワークシートを挿入する", keys: ["Shift","F11"] },
     { desc: "上のセルの内容を下にコピーする", keys: ["Ctrl","D"] },
     { desc: "左のセルの内容を右にコピーする", keys: ["Ctrl","R"] },
-    { desc: "選択範囲をテーブルに変換する", keys: ["Ctrl","T"] },
+    { desc: "選択範囲をテーブルに変換する", keys: ["Ctrl","T"], reserved: true },
     { desc: "フィルターのオン／オフを切り替える", keys: ["Ctrl","Shift","L"] },
     { desc: "データの末尾（端）まで一気に移動する", keys: ["Ctrl","Arrow"] },
     { desc: "端まで範囲選択する", keys: ["Ctrl","Shift","Arrow"] },
@@ -276,7 +276,7 @@ const DATA = {
     { desc: "コピーした書式を貼り付ける", keys: ["Ctrl","Shift","V"] },
     { desc: "スライドショー中に画面を黒くする", keys: ["B"] },
     { desc: "スライドショー中に指定番号へ移動する", keys: ["Number","Enter"] },
-    { desc: "新しいプレゼンを作成する", keys: ["Ctrl","N"] },
+    { desc: "新しいプレゼンを作成する", keys: ["Ctrl","N"], reserved: true },
     { desc: "ハイパーリンクを挿入する", keys: ["Ctrl","K"] },
     { desc: "選択範囲を中央揃えにする", keys: ["Ctrl","E"] },
   ]
@@ -358,11 +358,15 @@ let typeLocked = false;
 
 function renderType(){
   const q = deck[idx];
+  const reserved = !!q.reserved;
+  const hint = reserved
+    ? "このキーはブラウザが使うため、キーをタップして再現してください"
+    : "キーを押してください（同時押し）";
   card.innerHTML = progressBar() + `
     <div class="prompt-label">この操作のショートカットは？</div>
     <div class="prompt">${q.desc}</div>
     <div class="keys-display" id="keysDisp"></div>
-    <div class="hint-press">キーを押してください（同時押し）</div>
+    <div class="hint-press">${hint}</div>
     <div class="feedback" id="fb"></div>
     <div class="card-foot">
       <button class="reveal-hint" id="reveal">答えを見る</button>
@@ -372,6 +376,28 @@ function renderType(){
   document.getElementById('reveal').onclick = () => revealType();
   document.getElementById('next').onclick = next;
   typeLocked = false; held = new Set();
+  if(reserved) wireClickKeys();
+}
+
+// 予約キー問題: キーキャップをクリック/タップで再現させる
+function wireClickKeys(){
+  const q = deck[idx];
+  const caps = [...document.querySelectorAll('#keysDisp .keycap')];
+  caps.forEach((cap, i) => {
+    cap.style.cursor = 'pointer';
+    cap.setAttribute('role','button');
+    cap.setAttribute('tabindex','0');
+    const activate = () => {
+      if(typeLocked) return;
+      held.add(q.keys[i]);
+      renderKeycaps(held);
+      // 再描画でDOMが入れ替わるので再配線
+      if(keysMatch(q.keys, [...held])) { typeSucceed(); }
+      else { wireClickKeys(); }
+    };
+    cap.onclick = activate;
+    cap.onkeydown = (ev) => { if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); activate(); } };
+  });
 }
 
 function renderKeycaps(activeSet){
@@ -408,6 +434,8 @@ function typeSucceed(){
 /* keyboard listeners for type mode */
 window.addEventListener('keydown', (e)=>{
   if(mode !== 'type' || typeLocked || idx>=deck.length) return;
+  // 予約キー問題はクリックで再現させるため、キーボード判定はしない
+  if(deck[idx].reserved) return;
   // prevent browser shortcuts hijacking practice
   if(["Tab"].includes(e.key)) return;
   e.preventDefault();
